@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 
 public record PostDto(
         int id,
-        LocalDateTime createdDate,
-        LocalDateTime modifiedDate,
-        String subject,
-        String body
+        LocalDateTime createDate,
+        LocalDateTime modifiyDate,
+        String title,
+        String content
 ) {
 
     public PostDto(Post post) {
