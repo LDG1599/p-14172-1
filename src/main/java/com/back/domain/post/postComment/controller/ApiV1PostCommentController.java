@@ -1,11 +1,15 @@
 package com.back.domain.post.postComment.controller;
 
+import com.back.domain.post.post.controller.ApiV1PostController;
 import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.service.PostService;
 import com.back.domain.post.postComment.dto.PostCommentDto;
 import com.back.domain.post.postComment.entity.PostComment;
 import com.back.global.rsData.RsData;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +47,7 @@ public class ApiV1PostCommentController {
 
         return new PostCommentDto(postComment);
     }
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     @Transactional
     public RsData<Void> delete(
             @PathVariable int postId,
@@ -59,5 +63,31 @@ public class ApiV1PostCommentController {
                 "%d번 댓글이 삭제되었습니다.".formatted(postComment.getId())
         );
 
+    }
+
+    record PostCommentModifyReqBody(
+            @NotBlank
+            @Size(min = 2, max = 100)
+            String content
+    ) {
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public RsData<Void> modify(
+            @PathVariable int postId,
+            @PathVariable int id,
+            @Valid @RequestBody PostCommentModifyReqBody reqBody
+    ) {
+        Post post = postService.findById(postId).get();
+
+        PostComment postComment = post.findCommentById(id).get();
+
+        postService.modifyComment(postComment, reqBody.content);
+
+        return new RsData<>(
+                "200-1",
+                "%d번 댓글이 수정되었습니다.".formatted(post.getId())
+        );
     }
 }
