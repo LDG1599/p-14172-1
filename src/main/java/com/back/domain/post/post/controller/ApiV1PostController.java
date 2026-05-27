@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +19,9 @@ import java.util.Map;
 public class ApiV1PostController {
     private final PostService postService;
 
+
     @GetMapping
+    @Transactional(readOnly = true)
 
     public List<PostDto> getItems() {
         List<Post> items = postService.findAll();
@@ -31,13 +32,14 @@ public class ApiV1PostController {
                 .toList();
     }
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
 
     public PostDto getItem(@PathVariable int id
     ) {
         Post post = postService.findById(id).get();
 
 
-    return new PostDto(post);
+        return new PostDto(post);
     }
 
     @DeleteMapping("/{id}")
@@ -62,30 +64,21 @@ public class ApiV1PostController {
     ) {
     }
 
-    public record PostWriteResBody(
-            long totalCount,
-            PostDto post
-    ) {
-    }
 
     @PostMapping
     @Transactional
-    public RsData<PostWriteResBody> write(@Valid @RequestBody PostWriteReqBody reqBody) {
+    public RsData<PostDto> write(@Valid @RequestBody PostWriteReqBody reqBody) {
         Post post = postService.write(reqBody.title, reqBody.content);
-        long totalCount = postService.count();
 
 
         return new RsData<>(
                 "201-1",
-                "%d번 글이 생성되었습니다.".formatted(post.getId()),
-                new PostWriteResBody(
-                        totalCount,
-                        new PostDto(post)
-                )
+                "%d번 글이 작성되었습니다.".formatted(post.getId()),
+                new PostDto(post)
         );
     }
 
-    record PostModifyReqBody(
+    public record PostModifyReqBody(
             @NotBlank
             @Size(min = 2, max = 100)
             String title,
